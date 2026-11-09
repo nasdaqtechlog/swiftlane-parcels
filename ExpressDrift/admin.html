@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations dashboard | ExpressDrift</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{font-family:"DM Sans",Arial,sans-serif;color:#17283b;background:#f3f6fa;--navy:#10243a;--navy2:#193b5d;--orange:#f26b1d;--line:#e1e7ee;--muted:#718096;--green:#087f68}
+*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}.shell{max-width:1440px;margin:auto;padding:28px 34px}
+header{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:13px}.mark{width:44px;height:44px;border-radius:13px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 1rem Manrope,sans-serif}.brand h1{font:800 1.4rem Manrope,sans-serif;color:var(--navy);margin:0}.brand p{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+.auth{display:flex;align-items:center;gap:12px}.auth button,.action{border:0;border-radius:8px;background:var(--navy);color:#fff;padding:10px 15px;font-weight:700;cursor:pointer}.auth button:hover,.action:hover{background:var(--navy2)}#sign-out{background:#fff;color:var(--navy);border:1px solid var(--line)}#google-button[hidden],#signed-in[hidden],#shipments-panel[hidden]{display:none}
+.welcome{margin:34px 0 22px;display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap}.welcome h2{margin:0;color:var(--navy);font:700 1.75rem Manrope,sans-serif}.welcome p{margin:6px 0 0;color:var(--muted)}
+#message{margin:0;color:var(--navy);font-weight:600;min-height:1.5em}.alert{background:#fff;border:1px solid var(--line);border-left:4px solid var(--orange);padding:14px 18px;border-radius:10px;margin:18px 0}.alert p{margin:0;color:#45566b}.alert strong{color:var(--navy)}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:22px 0}.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px}.stat span{color:var(--muted);font-size:.88rem;font-weight:600}.stat strong{display:block;color:var(--navy);font:800 1.8rem Manrope,sans-serif;margin-top:8px}.stat small{color:var(--muted)}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:20px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.panel h2{font:700 1.2rem Manrope,sans-serif;color:var(--navy);margin:0}.tools{display:flex;gap:10px;flex-wrap:wrap}.tools input,.tools select,.note,.cost,.tracking-input{border:1px solid #d5dee8;border-radius:8px;padding:10px 12px;background:#fff;color:#17283b}.tools input{min-width:250px}.scroll{overflow-x:auto;margin-top:16px}table{width:100%;border-collapse:collapse;min-width:1150px}th{text-align:left;padding:12px;color:#718096;text-transform:uppercase;letter-spacing:.06em;font-size:.73rem;border-bottom:1px solid var(--line)}td{padding:14px 12px;border-bottom:1px solid var(--line);vertical-align:middle}tbody tr:last-child td{border-bottom:0}.tracking{font-weight:700;color:var(--navy)}td small{display:block;color:var(--muted);margin-top:4px}.route{white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}.status{border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff;min-width:145px}.note{min-width:180px}.tracking-input{min-width:145px}.cost{width:105px}.currency{min-width:82px;padding:8px 6px;border:1px solid var(--line);border-radius:8px;background:#fff}.action{padding:9px 13px}.action:disabled{opacity:.55;cursor:wait}.secondary{border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);padding:9px 13px;font-weight:700;cursor:pointer}.secondary:hover{background:#f3f6fa}.draft-note{display:block;margin-top:7px;padding:7px 9px;border:1px solid #cdd8e4;border-radius:7px;background:#f8fafc;color:var(--navy);font-size:.85rem;font-weight:700;cursor:pointer}.draft-note:hover{background:#edf3f8}.draft-note:disabled{opacity:.55;cursor:wait}.empty{text-align:center;color:var(--muted);padding:34px!important}.foot{color:var(--muted);font-size:.85rem;margin:14px 2px 0}
+@media(max-width:850px){.shell{padding:22px 18px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.cards{grid-template-columns:1fr 1fr;gap:10px}.stat{padding:15px}.stat strong{font-size:1.45rem}.panel{padding:16px}.tools,.tools input,.tools select{width:100%}.tools input{min-width:0}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <header>
+    <div class="brand"><div class="mark" aria-hidden="true">ED</div><div><h1>ExpressDrift</h1><p>Shipment operations</p></div></div>
+    <div class="auth"><div id="google-button"></div><div id="signed-in" hidden><span id="account"></span> <button id="sign-out" type="button">Sign out</button></div></div>
+  </header>
+  <div class="welcome"><div><h2>Operations overview</h2><p>Review registered-customer requests, set the price and tracking code, and publish shipment updates.</p></div><p id="message" role="status" aria-live="polite">Google sign-in is loading…</p></div>
+  <div class="alert"><p><strong>Manual quote control:</strong> Each new request requires an administrator-assigned tracking code, costing and currency before it can be tracked. Carrier/airline event automation is not connected.</p></div>
+  <section id="shipments-panel" hidden>
+    <div class="cards" aria-label="Shipment summary">
+      <div class="stat"><span>Total shipments</span><strong id="total-count">0</strong><small>All recorded bookings</small></div>
+      <div class="stat"><span>In transit</span><strong id="transit-count">0</strong><small>Picked up or moving</small></div>
+      <div class="stat"><span>Out for delivery</span><strong id="delivery-count">0</strong><small>Final-mile shipments</small></div>
+      <div class="stat"><span>Delivered</span><strong id="delivered-count">0</strong><small>Completed deliveries</small></div>
+    </div>
+    <section class="panel">
+      <div class="panel-head"><h2>Shipment requests &amp; bookings</h2><div class="tools"><input id="search" type="search" placeholder="Search reference, customer or route" aria-label="Search shipments"><select id="status-filter" aria-label="Filter by status"><option value="">All statuses</option></select><button class="secondary" id="refresh" type="button">Refresh</button></div></div>
+      <div class="scroll"><table><thead><tr><th>Request / Tracking code</th><th>Customer</th><th>Route</th><th>Manual costing</th><th>Status</th><th>Update note</th><th>Action</th></tr></thead><tbody id="shipments"></tbody></table></div>
+      <p class="foot">For a new request, enter the public tracking code, costing and currency. Saving confirms the shipment, emails its invoice and enables tracking. AI sends the selected status, route and facts you enter to Google Gemini to draft a note. Do not enter personal or sensitive information. Review the draft; AI does not update or email by itself.</p>
+    </section>
+  </section>
+</main>
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwZbov58jZSDuFXzcbJLsztXvOz8LXunicbJZFnsPlORtD7tK0F3cozH2lGXRECLPMJig/exec";
+const GOOGLE_CLIENT_ID = "699629693225-a4tj75k156vruu1brij4gpoqbq7gi0on.apps.googleusercontent.com";
+const STATUSES = ["Awaiting quote", "Booked", "Picked up", "In transit", "Out for delivery", "Delivered"];
+const CURRENCIES = ["", "USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "AED", "NGN", "SGD"];
+let adminToken = "";
+let allShipments = [];
+const $ = id => document.getElementById(id);
+const message = text => { $("message").textContent = text; };
+
+async function api(payload) {
+  if (!API_URL.startsWith("https://script.google.com/") || API_URL.includes("_HERE")) {
+    throw new Error("Set the Apps Script web app URL in admin.html first.");
+  }
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ ...payload, adminToken })
+  });
+  if (!response.ok) throw new Error("The shipment service returned an error. Please try again.");
+  const result = await response.json();
+  if (!result.ok) throw new Error(result.error || "Request failed.");
+  return result;
+}
+
+function addCell(row, text, className) {
+  const cell = document.createElement("td");
+  if (className) cell.className = className;
+  cell.textContent = text || "";
+  row.appendChild(cell);
+  return cell;
+}
+
+function summary() {
+  $("total-count").textContent = allShipments.length;
+  $("transit-count").textContent = allShipments.filter(s => s.status === "Picked up" || s.status === "In transit").length;
+  $("delivery-count").textContent = allShipments.filter(s => s.status === "Out for delivery").length;
+  $("delivered-count").textContent = allShipments.filter(s => s.status === "Delivered").length;
+}
+
+function renderShipments() {
+  const query = $("search").value.trim().toLowerCase();
+  const statusFilter = $("status-filter").value;
+  const filtered = allShipments.filter(s => {
+    const text = [s.id, s.name, s.email, s.phone, s.from, s.to].join(" ").toLowerCase();
+    return (!query || text.includes(query)) && (!statusFilter || s.status === statusFilter);
+  });
+  const body = $("shipments");
+  body.replaceChildren();
+  filtered.forEach(shipment => {
+    const row = document.createElement("tr");
+    const idCell = document.createElement("td");
+    const tracking = document.createElement("input");
+    tracking.className = "tracking-input";
+    tracking.value = shipment.trackingId || "";
+    tracking.placeholder = "Assign tracking code";
+    tracking.maxLength = 32;
+    tracking.setAttribute("aria-label", "Admin-assigned tracking code for " + shipment.requestId);
+    idCell.appendChild(tracking);
+    const created = document.createElement("small");
+    created.textContent = (shipment.trackingId ? shipment.requestId + " · " : "") + (shipment.created || "");
+    idCell.appendChild(created);
+    row.appendChild(idCell);
+    const customer = addCell(row, shipment.name);
+    const contact = document.createElement("small");
+    contact.textContent = [shipment.email, shipment.phone].filter(Boolean).join(" · ");
+    customer.appendChild(contact);
+    addCell(row, shipment.from + " → " + shipment.to, "route");
+    const costCell = document.createElement("td");
+    const amount = document.createElement("input");
+    amount.className = "cost";
+    amount.type = "number";
+    amount.min = "0.01";
+    amount.step = "0.01";
+    amount.value = shipment.amount || "";
+    amount.placeholder = "Amount";
+    amount.setAttribute("aria-label", "Manual shipment costing for " + shipment.requestId);
+    const currency = document.createElement("select");
+    currency.className = "currency";
+    currency.setAttribute("aria-label", "Costing currency for " + shipment.requestId);
+    CURRENCIES.forEach(value => currency.appendChild(new Option(value || "Choose currency", value)));
+    currency.value = shipment.currency || "";
+    costCell.append(amount, currency);
+    row.appendChild(costCell);
+    const statusCell = document.createElement("td");
+    const status = document.createElement("select");
+    status.className = "status";
+    status.setAttribute("aria-label", "Status for " + shipment.requestId);
+    STATUSES.forEach(value => status.appendChild(new Option(value, value)));
+    status.value = shipment.status;
+    statusCell.appendChild(status);
+    row.appendChild(statusCell);
+    const noteCell = document.createElement("td");
+    const note = document.createElement("input");
+    note.className = "note";
+    note.maxLength = 500;
+    note.placeholder = "Enter verified shipment facts for the customer";
+    note.setAttribute("aria-label", "Verified shipment facts and customer update for " + shipment.requestId);
+    const draft = document.createElement("button");
+    draft.type = "button";
+    draft.className = "draft-note";
+    draft.textContent = "Draft note with AI";
+    draft.setAttribute("aria-label", "Draft a customer update for " + shipment.requestId);
+    draft.addEventListener("click", async () => {
+      if (!note.value.trim() && !window.confirm("No shipment facts are entered. Ask AI for a generic update based only on the selected status?")) return;
+      draft.disabled = true;
+      draft.textContent = "Drafting…";
+      try {
+        const result = await api({
+          type: "admin_draft_update",
+          status: status.value,
+          from: shipment.from,
+          to: shipment.to,
+          facts: note.value.trim()
+        });
+        note.value = result.draft;
+        message("AI drafted a note for " + (shipment.trackingId || shipment.requestId) + ". Review it and press Save & email to send.");
+        note.focus();
+      } catch (error) {
+        message(error.message);
+      } finally {
+        draft.disabled = false;
+        draft.textContent = "Draft note with AI";
+      }
+    });
+    noteCell.append(note, draft);
+    row.appendChild(noteCell);
+    const actionCell = document.createElement("td");
+    const save = document.createElement("button");
+    save.type = "button";
+    save.className = "action";
+    save.textContent = shipment.trackingId ? "Save & email" : "Assign & confirm";
+    save.addEventListener("click", async () => {
+      save.disabled = true;
+      try {
+        const updated = await api({ type: "admin_update", requestId: shipment.requestId, trackingId: tracking.value, amount: amount.value, currency: currency.value, status: status.value, note: note.value });
+        message(updated.warning || ("Shipment " + (tracking.value || shipment.requestId) + " saved."));
+        await loadShipments();
+      } catch (error) {
+        message(error.message);
+        save.disabled = false;
+      }
+    });
+    actionCell.appendChild(save);
+    row.appendChild(actionCell);
+    body.appendChild(row);
+  });
+  if (!filtered.length) {
+    const row = document.createElement("tr");
+    const cell = addCell(row, allShipments.length ? "No shipments match your search." : "No shipments have been booked yet.");
+    cell.colSpan = 7;
+    cell.className = "empty";
+    body.appendChild(row);
+  }
+}
+
+async function loadShipments() {
+  message("Loading shipments…");
+  try {
+    const result = await api({ type: "admin_list" });
+    allShipments = result.shipments;
+    summary();
+    renderShipments();
+    message("Dashboard updated at " + new Intl.DateTimeFormat("en", { timeStyle: "short" }).format(new Date()) + " · " + allShipments.length + " shipment(s)");
+  } catch (error) {
+    message(error.message);
+    if (/sign in|authorized/i.test(error.message)) signOut(false);
+  }
+}
+
+function onGoogleCredential(response) {
+  adminToken = response.credential;
+  $("google-button").hidden = true;
+  $("signed-in").hidden = false;
+  $("account").textContent = "Authorized administrator";
+  $("shipments-panel").hidden = false;
+  loadShipments();
+}
+
+window.onGoogleLibraryLoad = () => {
+  if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.startsWith("YOUR_")) {
+    message("Set your Google OAuth client ID and Apps Script URL to enable sign-in.");
+    return;
+  }
+  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
+  google.accounts.id.renderButton($("google-button"), { theme: "outline", size: "large", text: "signin_with" });
+  message("Sign in with an authorized Google account.");
+};
+
+function signOut(revoke) {
+  adminToken = "";
+  allShipments = [];
+  $("google-button").hidden = false;
+  $("signed-in").hidden = true;
+  $("shipments-panel").hidden = true;
+  $("shipments").replaceChildren();
+  if (revoke && window.google) google.accounts.id.disableAutoSelect();
+  message("You have signed out.");
+}
+
+STATUSES.forEach(value => $("status-filter").appendChild(new Option(value, value)));
+$("search").addEventListener("input", renderShipments);
+$("status-filter").addEventListener("change", renderShipments);
+$("refresh").addEventListener("click", loadShipments);
+$("sign-out").addEventListener("click", () => signOut(true));
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleLibraryLoad()"></script>
+</body>
+</html>
